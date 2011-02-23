@@ -59,6 +59,8 @@ class FileLoader(object):
         
         self.donotdownload = False
         
+        self.ftpdebug = False
+        
         self.__start_time = time.time()
         
         
@@ -84,8 +86,11 @@ class FileLoader(object):
                 host=self.host,
                 user=self.user,
                 password=self.password,
-                remote_dir=self.remote_dir
+                remote_dir=self.remote_dir,
             )
+            if self.ftpdebug:
+                self.transport.ftpdebug=True
+            
         elif (self.protocol=='scp'):
             self.transport = TransportSCP(
                 host=self.host,
@@ -95,7 +100,9 @@ class FileLoader(object):
             )   
         else:
             print "ERROR: unsupported protocol %s " % self.protocol
-            sys.exit(1) 
+            sys.exit(1)
+            
+ 
         
         #Step 3
         #connects to the SFTP server
@@ -104,6 +111,10 @@ class FileLoader(object):
         #Step 4
         #get list of files and match with file pattern
         self._files = self.get_remote_files()
+        
+        #pprint.pprint(self._files)        
+        #print self.transport.get_remote_files_dir()
+        
 
         
         #Step 5
@@ -185,11 +196,13 @@ Optional parameters:
     file_pattern - by default - load all found files
     protocol - ftp by default
     port - used default protocol port
+    --fake - do not download files - just create and populate history file (used to initiate history file with current ftp state)
+    --ftpdebug - show FTP session log to STDOUT 
         """
         help = False
         required = 0
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","help","fake"])
+            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","help","fake","ftpdebug"])
             for o, a in opts:
                 if o.lower() == "--host":
                     self.host = a
@@ -219,6 +232,8 @@ Optional parameters:
                     print usage
                 if o.lower() == "--fake":
                     self.donotdownload=True
+                if o.lower() == "--ftpdebug":
+                    self.ftpdebug = True
 
         except IOError, ioerr:
             print str(ioerr)

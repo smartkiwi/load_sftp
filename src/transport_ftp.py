@@ -2,6 +2,7 @@
 @author: Volodymyr Vladymyrov
 
 '''
+import re
 import stat
 import pprint
 import logging
@@ -29,6 +30,8 @@ class TransportFTP(object):
         self.password = password
         self.local_dir = local_dir
         self.ftp = None
+        self.ftpdebug = False
+        
         
         
         self.__error_stat = dict()
@@ -43,6 +46,8 @@ class TransportFTP(object):
         try:
             self.transport = FTP()
             self.ftp = self.transport
+            if self.ftpdebug:
+                self.transport.set_debuglevel(2)
             self.transport.connect(self.host, self.port)
 #            if self.lg.getEffectiveLevel()!=logging.INFO:
 #                paramiko.util.log_to_file(self.script_dir+"/ssh_session.log")
@@ -85,15 +90,34 @@ class TransportFTP(object):
             self.lg.error("Failed to get list of files in remote directory %s : %s" % (remote_dir, str(e)))
             self.lg.debug(traceback.format_exc())
             self.__count_error(str(e))
-        return self.__convert_file_attrs(fileattrs)
+        return self.__convert_file_attrs_nlist(fileattrs)
     
     
-    def __convert_file_attrs(self,scpfileattrs):
+    def __convert_file_attrs_nlist(self,scpfileattrs):
         fileattrs = list()
         for file in scpfileattrs:
             onlyfilename=os.path.basename(file)
             newfile = {
-                       #pretend that all etries returned by nlist are regular files (even directories)
+                       #pretend that all entries returned by nlist are regular files (even directories)
+                       'type':stat.S_IFREG,
+                       'filename':onlyfilename,
+                       #file modification time - is 0 unixtime because nlist doesn't provide file modification time
+                       'mtime':0
+                       }
+            fileattrs.append(newfile)
+        return fileattrs
+    def convert_file_attrs_dir(self,lines,pat_str=None):
+        '''-rw-r--r--   1 vvlad    vvlad      109068 Jul 17  2010 dictd_www_freedict_de_eng-rus.prc'''
+        '''drwxr-xr-x   2 vvlad    vvlad         512 Feb 23 00:10 scripts'''
+        fileattrs = list()
+        if pat_str is None:
+            pat_str = "(\d+\s*\d*)\s([\s+])$"
+        pattern = re.compile(pat_str)
+        for file in lines:
+            
+            onlyfilename=os.path.basename(file)
+            newfile = {
+                       #pretend that all entries returned by nlist are regular files (even directories)
                        'type':stat.S_IFREG,
                        'filename':onlyfilename,
                        #file modification time - is 0 unixtime because nlist doesn't provide file modification time
@@ -136,6 +160,31 @@ class TransportFTP(object):
         self.lg.info("error stats:")
         for k,v in self.__error_stat.items():
             self.lg.info("\t %s: %s times"  % (k,v))
+            
+    def __sendcommand(self,cmd):
+        lines = []
+        self.transport.retrlines(cmd, lines.append)
+        return lines
+        
+    def get_remote_files_dir(self,remote_dir=None):
+        """retrieves the list of files in the directory and its attributes - 
+        every file entry is in SFTPAttributes format
+        @return: list of SFTPAttributes
+        """
+        if remote_dir is None:
+            remote_dir = self.remote_dir
+            
+        fileattrs  = None
+        try:
+            fileattrs = self.__sendcommand("LIST -latr "+self.remote_dir) 
+        except Exception, e:
+            self.lg.error("Failed to get list of files in remote directory %s : %s" % (remote_dir, str(e)))
+            self.lg.debug(traceback.format_exc())
+            self.__count_error(str(e))
+        return self.convert_file_attrs_dir(fileattrs)
+
+    
+
                 
 
 

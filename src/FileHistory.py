@@ -73,7 +73,7 @@ class FileHistory(object):
         @param value
         """
         self.data[key] = item
-        self.age[key] = time.time()
+        self.age[key] = int(time.time())
         
         
     def __len__(self):
@@ -90,7 +90,7 @@ class FileHistory(object):
         try:
             f = open(self._file, 'w')
             for file in self.data.keys():
-                ts = self.data[file]
+                ts = int(self.data[file])
                 #print "ts to save %s" % ts
                 age = self.age[file]
                 tsread = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(ts)))
