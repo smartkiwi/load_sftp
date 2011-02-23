@@ -1,1 +1,9 @@
 
+SFTP/FTP loader that looks for new files
+
+usage:
+For FTP session:
+python load_sftp.py --host=<host> --user=<user> --password=<password> --remote_dir=<remote dir>  --local_dir=out --history_file=custom_history --debug=DEBUG
+
+For SFTP session:
+python load_sftp.py --host=<host> --user=<user> --password=<password> --remote_dir=<remote dir>  --local_dir=out --history_file=custom_history --debug=DEBUG --protocol=scp

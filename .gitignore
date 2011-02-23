@@ -2,3 +2,6 @@
 .pydevproject
 out/
 backup/
+*.pyc
+custom_history
+*.log
