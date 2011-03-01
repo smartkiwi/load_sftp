@@ -18,7 +18,7 @@ class TransportSCP(object):
     '''
 
 
-    def __init__(self,host=None,port=None,user=None,password=None,remote_dir='.',local_dir='.',pkey=False,keysdir=None):
+    def __init__(self,host=None,port=None,user=None,password=None,remote_dir='.',local_dir='.',pkey=False,keysdir=None,passphrase=''):
         import paramiko
         paramiko.util.log_to_file('demo_sftp.log')        
         self.__init_logger()
@@ -46,6 +46,7 @@ class TransportSCP(object):
         
         self.pkey = pkey
         if pkey:
+            self.passphrase = passphrase 
             if keysdir is None:
                 self.keysdir = os.path.expanduser('~/.ssh/')
             else:
@@ -118,7 +119,8 @@ class TransportSCP(object):
         try:
             self.key = paramiko.DSSKey.from_private_key_file(default_path)                    
         except paramiko.PasswordRequiredException:
-            password = 'test123'
+            self.lg.info("key needs passphrase")
+            password = self.passphrase
             self.key = paramiko.DSSKey.from_private_key_file(default_path, password)
 
     def _load_key_r(self):
@@ -128,7 +130,8 @@ class TransportSCP(object):
         try:
             self.key = paramiko.RSAKey.from_private_key_file(default_path)                    
         except paramiko.PasswordRequiredException:
-            password = 'test123'
+            self.lg.info("key needs passphrase")
+            password = self.passphrase
             self.key = paramiko.DSSKey.from_private_key_file(default_path, password)
         
         
@@ -294,7 +297,8 @@ if __name__ == '__main__':
             password="",
             remote_dir=".",
             pkey=True,
-            keysdir="C:/My Documents/Work/workspace/load_sftp/pkeys" 
+            keysdir="C:/My Documents/Work/workspace/load_sftp/pkeys",
+            passphrase='test123' 
                        )
     scp.connect()
     files = scp.get_remote_files()

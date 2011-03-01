@@ -70,6 +70,8 @@ class FileLoader(object):
         
         self.gzip_location = '/usr/contrib/bin/gzip'
         
+        self.passphrase = ''
+        
     
 
     
@@ -104,7 +106,8 @@ class FileLoader(object):
                 password=self.password,
                 remote_dir=self.remote_dir,
                 pkey=self.pkey,
-                keysdir=self.keysdir
+                keysdir=self.keysdir,
+                passphrase =self.passphrase 
             )   
 
         else:
@@ -213,7 +216,7 @@ Optional parameters:
         help = False
         required = 0
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","keysdir=","help","fake","ftpdebug","pkey"])
+            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","keysdir=","passphrase=","help","fake","ftpdebug","pkey"])
             for o, a in opts:
                 if o.lower() == "--host":
                     self.host = a
@@ -244,6 +247,10 @@ Optional parameters:
                         self.protocol = a
                 if o.lower() == "--keysdir":
                     self.keysdir = a
+
+                if o.lower() == "--passphrase":
+                    self.passphrase = a                    
+
                     
                     
 #TODO: have option to disable purge, by default - purge is on                    
