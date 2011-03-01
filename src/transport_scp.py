@@ -274,10 +274,10 @@ if __name__ == '__main__':
     _logger = logging.getLogger()
 #test main    
     scp = TransportSCP(
-            host='osprey.ise.telcordia.com',
+            host='<host>',
             port=22,
-            user="sd",
-            password="sd123",
+            user="<user>",
+            password="<pass>",
             remote_dir="."
                        )
     scp.connect()
@@ -291,14 +291,14 @@ if __name__ == '__main__':
     print "trying user/publickey login"
     
     scp = TransportSCP(
-            host='xp4r.com',
+            host='<host>',
             port=22,
-            user="vvlad",
+            user="<user>",
             password="",
             remote_dir=".",
             pkey=True,
             keysdir="C:/My Documents/Work/workspace/load_sftp/pkeys",
-            passphrase='test123' 
+            passphrase='<passphrase>' 
                        )
     scp.connect()
     files = scp.get_remote_files()
