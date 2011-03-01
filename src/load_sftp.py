@@ -61,8 +61,14 @@ class FileLoader(object):
         
         self.ftpdebug = False
         
+        self.pkey = False
+        self.keysdir = None
+        
         self.__start_time = time.time()
         
+        self.gzip = False
+        
+        self.gzip_location = '/usr/contrib/bin/gzip'
         
     
 
@@ -96,8 +102,11 @@ class FileLoader(object):
                 host=self.host,
                 user=self.user,
                 password=self.password,
-                remote_dir=self.remote_dir
+                remote_dir=self.remote_dir,
+                pkey=self.pkey,
+                keysdir=self.keysdir
             )   
+
         else:
             print "ERROR: unsupported protocol %s " % self.protocol
             sys.exit(1)
@@ -197,12 +206,14 @@ Optional parameters:
     protocol - ftp by default
     port - used default protocol port
     --fake - do not download files - just create and populate history file (used to initiate history file with current ftp state)
-    --ftpdebug - show FTP session log to STDOUT 
+    --ftpdebug - show FTP session log to STDOUT
+    --gzip - after downloading file gzip it 
+    --pkey [--keysdir=/home/user/.ssh] - for scp protocol use publickey authecation, optionally - specify keysdir=directory with known_hosts and id_rsa/id_dsa key files 
         """
         help = False
         required = 0
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","help","fake","ftpdebug"])
+            opts, args = getopt.getopt(sys.argv[1:], "", ["host=", "user=", "password=", "remote_dir=","file_pattern=","local_dir=","history_file=","debug=","protocol=","keysdir=","help","fake","ftpdebug","pkey"])
             for o, a in opts:
                 if o.lower() == "--host":
                     self.host = a
@@ -210,9 +221,14 @@ Optional parameters:
                 if o.lower() == "--user":
                     self.user = a
                     required=required+1
+
                 if o.lower() == "--password":
                     self.password = a
                     required=required+1                                        
+                if o.lower() == "--pkey":
+                    self.pkey = True
+                    required=required+1
+                    
                 if o.lower() == "--remote_dir":
                     self.remote_dir = a
                 if o.lower() == "--file_pattern":
@@ -225,7 +241,11 @@ Optional parameters:
                     self.debug_level = a
                 if o.lower() == "--protocol":
                     if a=='scp' or a=='ftp':
-                        self.protocol = a                    
+                        self.protocol = a
+                if o.lower() == "--keysdir":
+                    self.keysdir = a
+                    
+                    
 #TODO: have option to disable purge, by default - purge is on                    
                 if o.lower() == "--help":
                     help=True
@@ -234,6 +254,10 @@ Optional parameters:
                     self.donotdownload=True
                 if o.lower() == "--ftpdebug":
                     self.ftpdebug = True
+
+                if o.lower() == "--gzip":
+                    self.gzip = True
+
 
         except IOError, ioerr:
             print str(ioerr)
@@ -345,9 +369,15 @@ Optional parameters:
                     self.history[filepath] = self._filteredfiles[filepath]
                 #save after every file - in case of crash 
                     self.history.save()
+                    self.compressfile(self.local_dir+'/'+justfile)
                 else:
                     self.lg.warn("failed to download the file")
         self.lg.info("%s files were downloaded" % download_count)
+        
+    def compressfile(self,filepath):
+        if self.gzip:
+            #run gzip file
+            pass
             
              
 

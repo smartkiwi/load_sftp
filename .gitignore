@@ -6,3 +6,9 @@ backup/
 custom_history
 *.log
 run_xp4r.bat
+lib/
+paramiko-1.7.4/
+pkeys/
+run_xp4r_scp.bat
+
+

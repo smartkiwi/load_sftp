@@ -7,3 +7,11 @@ python load_sftp.py --host=<host> --user=<user> --password=<password> --remote_d
 
 For SFTP session:
 python load_sftp.py --host=<host> --user=<user> --password=<password> --remote_dir=<remote dir>  --local_dir=out --history_file=custom_history --debug=DEBUG --protocol=scp
+
+For SFTP session publickey authorization:
+python load_sftp.py --host=<host> --user=<user> --password=<password> --remote_dir=<remote dir>  --local_dir=out --history_file=custom_history --debug=DEBUG --protocol=scp --pkey
+
+
+lib should contain paramiko lib
+
+pkeys - could contain keys and known_hosts file otherwise client will use ~/.ssh directory
