@@ -9,6 +9,7 @@ import logging
 import os
 import traceback
 from ftplib import FTP, error_perm
+from multi_grep import Multi_Grep
 
 
 class TransportFTP(object):
@@ -147,6 +148,39 @@ class TransportFTP(object):
             self.lg.debug(traceback.format_exc())
             self.__count_error(str(e))
             ok = False
+        return ok
+
+    def process_file(self,filename,regexes={},nfre=None):
+        ok = False
+        
+        mg = Multi_Grep(regexes,nfre)
+        mg.debug = True
+        
+        cmd = 'RETR '+filename
+        blocksize = 8*1024
+
+        try:
+            self.ftp.voidcmd('TYPE I')
+            conn = self.ftp.transfercmd(cmd, None)
+            while 1:
+                data = conn.recv(blocksize)
+                if not data:
+                    break
+                mg.append(data)
+                if mg.found_all():
+                    break
+                if mg.found_break():
+                    break
+            conn.close()
+
+        except error_perm, e:
+            self.lg.warn("5xx failed to download remote file: %s and save it as local: , reason %s " % (filename,str(e)))
+            
+        self.lg.info("RESULT: %s : %s : %s" % (filename,mg.recontents['ts'],mg.refound['kpi']))
+            
+        mg.cleanup()
+
+
         return ok
     
     

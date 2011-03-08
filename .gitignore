@@ -13,3 +13,4 @@ run_xp4r_scp.bat
 python2.5-custom.zip
 run.sh
 test_scp.py 
+run_xp4r_notfull.bat
